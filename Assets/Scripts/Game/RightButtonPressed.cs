@@ -24,11 +24,13 @@ public class RightButtonPressed : MonoBehaviour, IPointerDownHandler, IPointerUp
     void IPointerDownHandler.OnPointerDown(PointerEventData eventData)
     {
         buttonPressed = true;
-        Debug.Log("ayy");
     }
 
     void IPointerUpHandler.OnPointerUp(PointerEventData eventData)
     {
         buttonPressed = false;
     }
+
+    private void OnDisable() { buttonPressed = false; }
+    private void OnApplicationFocus(bool focused) { if (!focused) buttonPressed = false; }
 }

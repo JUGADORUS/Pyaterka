@@ -22,7 +22,8 @@ public class BreakableObjectManager : MonoBehaviour
     {
         for (int i = 0; i < Instance.breakableObjects.Count; i++)
         {
-            Instance.breakableObjects[i].SetActive(true);
+            if (breakableObjects[i] != null) breakableObjects[i].SetActive(true);
         }
+        breakableObjects.Clear();
     }
 }

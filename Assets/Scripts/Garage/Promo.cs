@@ -8,14 +8,10 @@ public class Promo : MonoBehaviour
 
     public void Ok()
     {
-        if (_InputField.text == _promo && BuildFlag.BuildValue == 69)
-        {
-            _InputField.text = " ";
-            Progress.Instance.Data.Coins += 2000;
-            Podium.Instance.UpdateButtons();
-            CoinCounter.Instance.UpdateCounter();
-            Progress.Instance.SaveMoneyAfterPromo();
-            _promo = "dkfsjklfjweouifhsdjkfhuheuiyfwegfihwefweqwerty";
-        }
+        if (BuildFlag.BuildValue != 69 || _InputField.text.Trim() != _promo ||
+            !Progress.Instance.TryRedeemPromo()) return;
+        _InputField.text = string.Empty;
+        Podium.Instance.UpdateButtons();
+        CoinCounter.Instance.UpdateCounter();
     }
 }

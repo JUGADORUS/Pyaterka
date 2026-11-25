@@ -4,7 +4,7 @@ using UnityEngine;
 using TMPro;
 
 
-public class CarChaPanelController : MonoBehaviour
+public class CarCharacteristicsPanelController : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI _healthText;
     [SerializeField] private TextMeshProUGUI _speedText;

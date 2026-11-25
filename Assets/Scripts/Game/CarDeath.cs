@@ -1,107 +1,78 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using System.Runtime.InteropServices;
-using System;
 
 public class CarDeath : MonoBehaviour
 {
-    public static int Health = 3;
     [SerializeField] private GameObject _dieEffect;
+    private int health = 3;
+    private bool dying;
+    private float nextDamageTime;
 
     private void OnCollisionEnter(Collision collision)
     {
-        if(collision.gameObject.GetComponent<UnbreakableObject>())
+        if (dying || !MenuManager.GameActive) return;
+        PlayerCar player = GetComponent<PlayerCar>();
+        bool fatal = collision.gameObject.GetComponentInParent<UnbreakableObject>() != null;
+        bool damaging = collision.gameObject.GetComponentInParent<BreakableObject>() != null ||
+            collision.gameObject.GetComponentInParent<Police>() != null;
+        if (player == null && collision.gameObject.GetComponentInParent<PlayerCar>() != null)
+            fatal = true;
+        if (!fatal && !damaging) return;
+
+        if (player != null)
         {
-            if (gameObject.GetComponent<PlayerCar>()) Vignette.Instance.Flash();
-            Die();
+            if (Time.time < nextDamageTime) return;
+            nextDamageTime = Time.time + 0.75f;
+            if ((fatal || player.Health <= 1) && player.UseCrashShield())
+            {
+                if (Vignette.Instance != null) Vignette.Instance.Flash();
+                if (CoinManager.Instance != null) CoinManager.Instance.ShowHP();
+                return;
+            }
+            player.Health = fatal ? 0 : Mathf.Max(0, player.Health - 1);
+            if (CoinManager.Instance != null) CoinManager.Instance.ShowHP();
+            if (Vignette.Instance != null) Vignette.Instance.Flash();
+            if (player.Health == 0) Die(player);
         }
-
-        if (collision.gameObject.GetComponent<BreakableObject>())
+        else if (fatal || --health <= 0)
         {
-            if (gameObject.GetComponent<PlayerCar>())
-            {
-                PlayerCar.Instance.Health--;
-                CoinManager.Instance.amountHP.text = PlayerCar.Instance.Health.ToString();
-                Vignette.Instance.Flash();
-                if (PlayerCar.Instance.Health <= 0)
-                {
-                    Die();
-                }
-            }
-            else
-            {
-                Health--;
-
-                if (Health <= 0)
-                {
-                    Die();
-                }
-            }
-        }
-
-        if (collision.gameObject.GetComponent<Police>())
-        {
-            if (gameObject.GetComponent<PlayerCar>())
-            {
-                PlayerCar.Instance.Health--;
-                CoinManager.Instance.amountHP.text = PlayerCar.Instance.Health.ToString();
-                Vignette.Instance.Flash();
-                if (PlayerCar.Instance.Health <= 0)
-                {
-                    Die();
-                }
-            }
-            else
-            {
-                Health--;
-
-                if (Health <= 0)
-                {
-                    Die();
-                }
-            }
-        }
-
-        if (collision.gameObject.GetComponent<PlayerCar>())
-        {
-            Die();
+            Die(null);
         }
     }
 
-    private void Die()
+    private void Die(PlayerCar player)
     {
-        if (gameObject.GetComponent<PlayerCar>())
+        if (dying) return;
+        dying = true;
+        if (_dieEffect != null) Instantiate(_dieEffect, transform.position, Quaternion.identity);
+        if (player == null)
         {
-            Instantiate(_dieEffect, transform.position, Quaternion.identity);
-            StartCoroutine(GoBack());
+            if (MenuManager.GameActive && GetComponent<Police>() != null && CoinManager.Instance != null)
+            {
+                Vector3 coinPosition = new Vector3(transform.position.x, 1.5f, transform.position.z);
+                Coin drop = CoinManager.Instance.SpawnCoin(coinPosition);
+                if (drop != null) drop.Value = 3;
+            }
+            Destroy(gameObject);
             return;
         }
-
-        Destroy(gameObject);
-        Instantiate(_dieEffect, transform.position, Quaternion.identity);
+        MenuManager.Instance.EndRun();
+        StartCoroutine(GoBack(player));
     }
 
-    IEnumerator GoBack()
+    private IEnumerator GoBack(PlayerCar player)
     {
-        PlayerCar.Instance.Health = PlayerCar.Instance.maxHealth;
-        GetComponent<Rigidbody>().isKinematic = true;
-        PlayerCar.Instance.transform.localScale = Vector3.zero;
-        yield return new WaitForSeconds(2);
-        GetComponent<Rigidbody>().isKinematic = false;
-        PlayerCar.Instance.transform.localScale = Vector3.one;
-
-        PlayerCar.Instance._carRotation = 0;
-        PlayerCar.Instance._visualRotation = 0;
-
-        GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
-        GetComponent<Rigidbody>().velocity = Vector3.zero;
-        transform.position = MenuManager.Instance.transform.position;
-        transform.rotation = MenuManager.Instance.transform.rotation;
-
-        PlayerCar.Instance.Health = PlayerCar.Instance.maxHealth;
-        CoinManager.Instance.amountHP.text = PlayerCar.Instance.Health.ToString();
-
+        Rigidbody body = GetComponent<Rigidbody>();
+        Vector3 originalScale = transform.localScale;
+        body.isKinematic = true;
+        transform.localScale = Vector3.zero;
+        yield return new WaitForSeconds(2f);
+        transform.SetPositionAndRotation(MenuManager.Instance.transform.position,
+            MenuManager.Instance.transform.rotation);
+        transform.localScale = originalScale;
+        body.isKinematic = false;
+        player.ResetRun();
+        dying = false;
         MenuManager.Instance.TurnOnMenu();
     }
 }

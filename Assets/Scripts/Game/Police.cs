@@ -18,12 +18,14 @@ public class Police : MonoBehaviour
     
 
 
+    public static int ActiveCount { get; private set; }
+    private void OnEnable() { ActiveCount++; }
+    private void OnDisable() { ActiveCount = Mathf.Max(0, ActiveCount - 1); }
+
     private void Awake()
     {   
         policeCar = GetComponent<Rigidbody>();
-        Debug.Log(speed);
-
-        if (target == null && PlayerCar.Instance.gameObject != null)
+        if (PlayerCar.Instance != null)
         {
             target = PlayerCar.Instance.gameObject;
             return;
@@ -34,6 +36,11 @@ public class Police : MonoBehaviour
     {
         if (MenuManager.GameActive == true)
         {
+            if (target == null)
+            {
+                if (PlayerCar.Instance == null) return;
+                target = PlayerCar.Instance.gameObject;
+            }
             if (Mathf.Abs(policeCar.angularVelocity.y) > Mathf.Abs(driftAngle.y))
             {
                 if (policeCar.angularVelocity.y > Vector3.zero.y)

@@ -86,11 +86,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fa885b79acebf794db60c78a15d039a2,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 4380191273813844185}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fa885b79acebf794db60c78a15d039a2, type: 3}
 --- !u!1 &55612791668070775 stripped
 GameObject:
@@ -98,17 +94,3 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 866092301143434278}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &4380191273813844185
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 55612791668070775}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 42c34cb313045d44b848f43c17a2abce, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  tileSize: 1
-  tileOffset: {x: 0, y: 0, z: 0}

@@ -6,49 +6,37 @@ public class ImproveSpeed : MonoBehaviour
     [SerializeField] private CarData carData;
     [SerializeField] private TMP_Text _speedText;
     [SerializeField] public TMP_Text _maxSpeed;
-
+    [SerializeField] private TMP_Text _priceText;
     private int _carIndex;
-    private float _speed;
-
     public static ImproveSpeed Instance;
 
-    public void Awake()
+    private void Awake()
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
     }
 
-    public void Start()
-    {
-        _maxSpeed.gameObject.SetActive(false);
-        UpdateSpeedCharacteristics(0);
-    }
-
     public void ImproveSpeedCharacteristics()
     {
-        if (Progress.Instance.Data.Coins >= 5)
-        {
-            if (_speed < 18f)
-            {
-                Progress.Instance.Data.Coins -= 5;
-                Progress.Instance.SpeedUp(_carIndex);
-                Podium.Instance.UpdateButtons();
-                CoinCounter.Instance.UpdateCounter();
-                _speedText.SetText(_speed.ToString());
-                PlayerCar.Instance._speed = _speed;
-            }
-            else
-            {
-                _maxSpeed.gameObject.SetActive(true);
-            }
-        } 
-        Debug.Log(_speed);
+        Progress.Instance.TryImproveSpeed(_carIndex);
+        Podium.Instance.UpdateButtons();
+        CoinCounter.Instance.UpdateCounter();
     }
 
     public void UpdateSpeedCharacteristics(CarType carType)
     {
-        _speed = Progress.Instance.GetSpeed((int)carType);
-        _speedText.SetText(_speed.ToString());
         _carIndex = (int)carType;
+        float speed = Progress.Instance.GetSpeed(_carIndex);
+        _speedText.SetText(speed.ToString("0.0"));
+        int cost = GameBalance.SpeedCost(_carIndex, speed);
+        bool showUpgrade = Progress.Instance.IsCarUnlocked(_carIndex) && _carIndex != GameBalance.PremiumCarIndex;
+        _maxSpeed.gameObject.SetActive(showUpgrade && cost == 0);
+        if (_priceText != null)
+        {
+            _priceText.gameObject.SetActive(showUpgrade && cost > 0);
+            _priceText.text = showUpgrade && cost > 0 ? cost + "$" : "";
+        }
+        var button = GetComponent<UnityEngine.UI.Button>();
+        if (button != null) button.interactable = showUpgrade && cost > 0 && Progress.Instance.Data.Coins >= cost;
     }
 }

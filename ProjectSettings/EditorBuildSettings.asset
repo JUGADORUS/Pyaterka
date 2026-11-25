@@ -5,16 +5,10 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/Game.unity
-    guid: 99c9720ab356a0642a771bea13969a05
-  - enabled: 1
-    path: Assets/Scenes/GamePyaterka.unity
     guid: f3b3eb4bd332a7846b8dd5e742731bc8
-  - enabled: 0
-    path: Assets/Scenes/Garage.unity
-    guid: 472f66fb8bb4e4146bed2a47438f4e5d
   - enabled: 1
-    path: Assets/Scenes/GaragePyaterka.unity
+    path: Assets/Scenes/Garage.unity
     guid: 0edd9ca64280869408bf77f022ccdf9a
   m_configObjects: {}

@@ -12,6 +12,7 @@ public class CoinCounter : MonoBehaviour
 
     public void Awake()
     {
+        Progress.EnsureLoaded();
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
     }
@@ -24,6 +25,7 @@ public class CoinCounter : MonoBehaviour
     public void UpdateCounter()
     {
         amountCoins.text = Progress.Instance.Data.Coins.ToString();
-        if (amountHP != null ) amountHP.text = PlayerCar.Instance.Health.ToString();
+        if (amountHP != null && PlayerCar.Instance != null)
+            amountHP.text = PlayerCar.Instance.Health.ToString();
     }
 }

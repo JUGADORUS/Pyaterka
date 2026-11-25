@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 2300000}
   - component: {fileID: 1536311631546692430}
   - component: {fileID: 3314758906700423831}
-  - component: {fileID: 1412196953684105012}
   m_Layer: 0
   m_Name: Props_Traffic Control Barrier Fence
   m_TagString: Untagged
@@ -119,17 +118,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 89e49a6a42fa83b40b6740e72cae00b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &1412196953684105012
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 100000}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 42c34cb313045d44b848f43c17a2abce, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  tileSize: 1
-  tileOffset: {x: 0, y: 0, z: 0}

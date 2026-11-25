@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,55 +5,54 @@ public class HealthManager : MonoBehaviour
 {
     [SerializeField] private Health _healthPrefab;
     [SerializeField] private float _mapSize;
-
     [SerializeField] private float timerMinHealth;
     [SerializeField] private float timerMaxHealth;
-
     public static HealthManager Instance;
-
-    private float time;
-    private int _activeHealth = 0;
+    private readonly HashSet<Health> activeHealth = new HashSet<Health>();
+    private float spawnTimer;
 
     private void Awake()
     {
-        if (Instance == null) { Instance = this; }
+        if (Instance == null) Instance = this;
         else Destroy(gameObject);
     }
 
-    private void Start()
+    public void ResetRun()
     {
-        StartCoroutine(SpawnCoins());
+        foreach (Health health in activeHealth)
+        {
+            if (health == null) continue;
+            health.gameObject.SetActive(false);
+            Destroy(health.gameObject);
+        }
+        activeHealth.Clear();
+        spawnTimer = Random.Range(timerMinHealth, timerMaxHealth);
     }
 
-    IEnumerator SpawnCoins()
+    private void Update()
     {
-        while (true)
+        if (!MenuManager.GameActive || activeHealth.Count >= 10) return;
+        spawnTimer -= Time.deltaTime;
+        if (spawnTimer > 0f) return;
+        spawnTimer = Mathf.Max(0.1f, Random.Range(timerMinHealth, timerMaxHealth));
+        // A crowded map must not block the main thread with an infinite search.
+        for (int attempt = 0; attempt < 32; attempt++)
         {
-            if (_activeHealth < 10)
-            {
-                if (MenuManager.GameActive == true)
-                {
-                    //Хилки
-                    float waitHealth = Random.Range(timerMinHealth, timerMaxHealth);
-                    yield return new WaitForSeconds(waitHealth);
-                    Vector3 healthPosition = GeneratePosition();
-                    while (Physics.CheckSphere(healthPosition, 0.75f)) healthPosition = GeneratePosition();
-                    Instantiate(_healthPrefab, healthPosition, Quaternion.identity);
-                }
-            }
-            yield return null;
+            Vector3 position = new Vector3(Random.Range(-_mapSize, _mapSize), 1.5f,
+                Random.Range(-_mapSize, _mapSize));
+            if (Physics.CheckSphere(position, 0.75f)) continue;
+            if (_healthPrefab != null)
+                activeHealth.Add(Instantiate(_healthPrefab, position, Quaternion.identity));
+            break;
         }
     }
 
-    private Vector3 GeneratePosition()
+    public void CollectHealth(Health pickup)
     {
-        return new Vector3(Random.Range(-_mapSize, _mapSize), 1.5f, Random.Range(-_mapSize, _mapSize));
-    }
-
-    public void CollectHealth()
-    {
-        _activeHealth--;
-        PlayerCar.Instance.Health++;
-        CoinManager.Instance.amountHP.text = PlayerCar.Instance.Health.ToString();
+        activeHealth.Remove(pickup);
+        PlayerCar player = PlayerCar.Instance;
+        if (player == null) return;
+        player.Health = Mathf.Min(player.Health + 1, player.maxHealth);
+        if (CoinManager.Instance != null) CoinManager.Instance.ShowHP();
     }
 }

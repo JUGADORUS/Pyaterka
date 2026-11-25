@@ -1,54 +1,15 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-
 public class TimerForPolice : MonoBehaviour
 {
-    private float timer = 0;
-
-    private float FirstSpeed = 16.3f;
-    private float SecondSpeed = 16.8f;
-    private float ThirdSpeed = 17f;
-    private float FourthSpeed = 18f;
-    private float FifthSpeed = 18.2f;
-
-    private void FixedUpdate()
+    private float timer;
+    public static int ActiveLimit { get; private set; } = 3;
+    public void ResetDifficulty() { timer = 0f; Apply(); }
+    private void FixedUpdate() { if (!MenuManager.GameActive) return; timer += Time.fixedDeltaTime; Apply(); }
+    private void Apply()
     {
-        if (MenuManager.GameActive == true)
-        {
-            timer += Time.deltaTime;
-            if (timer > 30 && timer < 31)
-            {
-                Debug.Log("newSpeed");
-                Police.speed = FirstSpeed;
-                PoliceSpawner.minTime = 9f;
-                PoliceSpawner.maxTime = 11f;
-            }
-            if (timer > 50 && timer < 51)
-            {
-                Debug.Log("newSpeed");
-                Police.speed = SecondSpeed;
-                PoliceSpawner.minTime = 7f;
-                PoliceSpawner.maxTime = 9f;
-            }
-            if (timer > 80 && timer < 81)
-            {
-                Debug.Log("newSpeed");
-                Police.speed = ThirdSpeed;
-                PoliceSpawner.minTime = 6f;
-                PoliceSpawner.maxTime = 8f;
-            }
-            if (timer > 110 && timer < 111)
-            {
-                Debug.Log("newSpeed");
-                Police.speed = FourthSpeed;
-                PoliceSpawner.minTime = 4f;
-                PoliceSpawner.maxTime = 6f;
-            }
-            if (timer > 111)
-            {
-                Police.speed = FifthSpeed;
-            }
-        }
+        Police.speed = GameBalance.PoliceSpeed(timer);
+        PoliceSpawner.minTime = GameBalance.SpawnInterval(timer);
+        PoliceSpawner.maxTime = PoliceSpawner.minTime + 2f;
+        ActiveLimit = GameBalance.PoliceLimit(timer);
     }
 }

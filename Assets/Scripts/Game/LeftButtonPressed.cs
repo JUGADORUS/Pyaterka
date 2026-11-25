@@ -30,4 +30,7 @@ public class LeftButtonPressed : MonoBehaviour, IPointerDownHandler, IPointerUpH
     {
         buttonPressed = false;
     }
+
+    private void OnDisable() { buttonPressed = false; }
+    private void OnApplicationFocus(bool focused) { if (!focused) buttonPressed = false; }
 }

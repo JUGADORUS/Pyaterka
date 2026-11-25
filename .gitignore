@@ -70,3 +70,12 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# Reversible asset cleanup backups
+/CleanupArchive/
+/LocalChecks/
+
+# Historical exported players (source assets remain versioned)
+/GTA6Build/
+/Web_Build/
+/SpecialBuildForPyaterka/

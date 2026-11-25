@@ -31,7 +31,7 @@ public class MusicManager : MonoBehaviour
 
     public void Switch(int index)
     {
-        if (index >= _musicClips.Length) return;
+        if (index < 0 || index >= _musicClips.Length || _source == null || _musicClips[index] == null) return;
         if (_source.clip == _musicClips[index]) return;
         _source.clip = _musicClips[index];
         _source.Stop();
@@ -40,6 +40,6 @@ public class MusicManager : MonoBehaviour
 
     public void PickCar()
     {
-        _pickSound.Play();
+        if (_pickSound != null) _pickSound.Play();
     }
 }

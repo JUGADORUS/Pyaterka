@@ -3,14 +3,21 @@ using UnityEngine;
 public class Coin : MonoBehaviour
 {
     [SerializeField] private GameObject CoinCollectEffect;
-    public void Collect()
+    public int Value = 2;
+    private bool collected;
+
+    public bool Collect()
     {
-        CoinManager.Instance.CollectCoin();
-        Instantiate(CoinCollectEffect, transform.position, Quaternion.identity);
+        if (collected || !MenuManager.GameActive) return false;
+        collected = true;
+        CoinManager.Instance.CollectCoin(this);
+        if (CoinCollectEffect != null)
+            Instantiate(CoinCollectEffect, transform.position, Quaternion.identity);
         Destroy(gameObject);
+        return true;
     }
 
-    public void Update()
+    private void Update()
     {
         transform.Rotate(0, 180 * Time.deltaTime, 0);
     }

@@ -2,12 +2,12 @@ using UnityEngine;
 
 public enum CarType
 {
-    Rafik = 0, 
+    Hypercar1 = 0,
     NissanGTR = 1,
-    Limousine = 2,
-    Hlamidia = 3,
+    Hypercar2 = 2,
+    Hypercar3 = 3,
     Gelik = 4,
-    Cybertrack = 5
+    Cybertruck = 5
 }
 
 public class Car : MonoBehaviour

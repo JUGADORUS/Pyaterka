@@ -7,6 +7,7 @@ public class Vignette : MonoBehaviour
     [SerializeField] private Image image;
 
     public static Vignette Instance;
+    private Coroutine flash;
 
     public void Awake()
     {
@@ -18,7 +19,8 @@ public class Vignette : MonoBehaviour
     public void Flash()
     {
         gameObject.SetActive(true);
-        StartCoroutine(FlashCoroutine());
+        if (flash != null) StopCoroutine(flash);
+        flash = StartCoroutine(FlashCoroutine());
     }
 
     IEnumerator FlashCoroutine()
@@ -28,6 +30,7 @@ public class Vignette : MonoBehaviour
             image.color = new Color(1, 1, 1, 1 - t * 4);
             yield return null;
         }
+        flash = null;
         gameObject.SetActive(false);
     }
 }
