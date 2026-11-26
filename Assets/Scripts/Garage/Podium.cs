@@ -131,9 +131,14 @@ public class Podium : MonoBehaviour
         ImproveHealth.Instance.UpdateHealthCharacteristics((CarType)_currentIndex);
         ImproveSpeed.Instance.UpdateSpeedCharacteristics((CarType)_currentIndex);
         if (offerText != null)
+        {
+            // Leave space for upgrade prices to the left of the description.
+            offerText.rectTransform.anchorMin = new Vector2(upgradeable ? 0.34f : 0.20f, 0.86f);
+            offerText.rectTransform.anchorMax = new Vector2(upgradeable ? 0.82f : 0.80f, 0.99f);
             offerText.text = _currentIndex == GameBalance.PremiumCarIndex
                 ? PyaterkaLocalization.Text(PremiumCar.Failed ? "Purchase failed" : "Premium perks")
                 : PyaterkaLocalization.Text("Survival income");
+        }
     }
 }
 

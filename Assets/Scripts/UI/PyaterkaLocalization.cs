@@ -10,7 +10,7 @@ public static class PyaterkaLocalization
 {
     private static readonly Dictionary<string, string[]> Translations = new Dictionary<string, string[]>
     {
-        { "Real money", new[] { "Реальные деньги", "Real money", "Gerçek para", "Dinero real", "Dinheiro real" } },
+        { "Yandex currency", new[] { "За яны", "Yandex currency", "Yandex para birimi", "Moneda de Yandex", "Moeda do Yandex" } },
         { "Buying", new[] { "Покупка…", "Purchasing…", "Satın alınıyor…", "Comprando…", "Comprando…" } },
         { "Unavailable", new[] { "Недоступно", "Unavailable", "Kullanılamıyor", "No disponible", "Indisponível" } },
         { "Purchase failed", new[] { "Покупка не завершена. Можно повторить.", "Purchase not completed. You can retry.", "Satın alma tamamlanmadı. Tekrar dene.", "Compra no completada. Puedes reintentar.", "Compra não concluída. Tente novamente." } },

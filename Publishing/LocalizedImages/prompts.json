@@ -1,0 +1,31 @@
+{
+  "tool": "Built-in ImageGen",
+  "useCase": "text-localization",
+  "invariants": "Preserve original composition, cars, colors and interface layout. Garage: keep all numbers, symbols and prices. Covers: replace only Cyrillic ГТА with Latin GTA, preserving 6, pink/white/black logo treatment, camera framing and background.",
+  "variants": [
+    {
+      "file": "garage-en.png",
+      "instructions": "Replace \"ЗДОРОВЬЕ\" with \"HEALTH\"; \"СКОРОСТЬ\" with \"SPEED\"; both \"УЛУЧШИТЬ\" labels with \"UPGRADE\"; bottom-left \"ДОМОЙ\" with \"BACK\"; bottom-center \"ПРИНЯТЬ\" with \"SELECT\". Language: English."
+    },
+    {
+      "file": "garage-tr.png",
+      "instructions": "Replace \"ЗДОРОВЬЕ\" with \"SAĞLIK\"; \"СКОРОСТЬ\" with \"HIZ\"; both \"УЛУЧШИТЬ\" labels with \"GELİŞTİR\"; bottom-left \"ДОМОЙ\" with \"GERİ\"; bottom-center \"ПРИНЯТЬ\" with \"SEÇ\". Language: Turkish. Render the Turkish accents exactly."
+    },
+    {
+      "file": "garage-es.png",
+      "instructions": "Replace \"ЗДОРОВЬЕ\" with \"SALUD\"; \"СКОРОСТЬ\" with \"VELOCIDAD\"; both \"УЛУЧШИТЬ\" labels with \"MEJORAR\"; bottom-left \"ДОМОЙ\" with \"VOLVER\"; bottom-center \"ПРИНЯТЬ\" with \"ELEGIR\". Language: Spanish."
+    },
+    {
+      "file": "garage-pt.png",
+      "instructions": "Replace \"ЗДОРОВЬЕ\" with \"SAÚDE\"; \"СКОРОСТЬ\" with \"VELOCIDADE\"; both \"УЛУЧШИТЬ\" labels with \"MELHORAR\"; bottom-left \"ДОМОЙ\" with \"VOLTAR\"; bottom-center \"ПРИНЯТЬ\" with \"SELECIONAR\". Language: Brazilian Portuguese. Render the accent in SAÚDE exactly."
+    },
+    {
+      "file": "cover-international.png",
+      "instructions": "This wide game cover is the edit target. Replace the large Cyrillic title \"ГТА 6\" at the top with the Latin-letter title \"GTA 6\". The first character MUST be the Latin G with its curved outline and horizontal inner stroke, not the Cyrillic Г. Match the heavy white block-letter logo, thick black outlines and shadows, white 6 with pink outline. Keep title placement at top right and scale legibly within frame. This single international cover serves English, Turkish, Spanish and Portuguese. Keep the red arrow exactly as in the input. Preserve all photo details, cars, police vehicles, street, sky and palm trees, framing and colors. Do not translate incidental POLICE car markings. Preserve the wide aspect ratio, ideally 800x470."
+    },
+    {
+      "file": "icon-international.png",
+      "instructions": "This square game icon is the edit target. Replace the large Cyrillic title \"ГТА 6\" along the bottom with the Latin-letter title \"GTA 6\". The first character MUST be the Latin G with its curved outline and horizontal inner stroke, not the Cyrillic Г. Match the heavy white block-letter logo, thick black outlines and shadows, white 6 with pink outline. Keep title placement along the bottom and legibly within frame. This single international icon serves English, Turkish, Spanish and Portuguese. Preserve all photo details, cars, police vehicles, street, sky and palm trees, framing and colors. Do not translate incidental POLICE car markings. Preserve the square aspect ratio, ideally 512x512."
+    }
+  ]
+}

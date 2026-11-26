@@ -3,7 +3,6 @@ using YG;
 
 public class AdvManager : MonoBehaviour
 {
-    [SerializeField] private float _adTimer;
     private bool _adQueued;
     private bool waitingForAd;
     private bool adOpened;
@@ -28,13 +27,12 @@ public class AdvManager : MonoBehaviour
 
     private void Update()
     {
-        _adTimer += Time.unscaledDeltaTime;
         // A skipped SDK request may not emit a close callback.
         if (waitingForAd && !adOpened && Time.realtimeSinceStartup - requestTime > 15f)
             OnAdClosed();
         if (!_adQueued || waitingForAd || !YG2.isSDKEnabled || YG2.nowAdsShow || YG2.isPauseGame) return;
         _adQueued = false;
-        if (_adTimer >= 120f && YG2.isTimerAdvCompleted)
+        if (YG2.isTimerAdvCompleted)
         {
             waitingForAd = true;
             adOpened = false;
@@ -56,7 +54,8 @@ public class AdvManager : MonoBehaviour
         if (!waitingForAd) return;
         waitingForAd = false;
         adOpened = false;
-        _adTimer = 0f;
+        // The plugin owns one session-wide timer, including time spent in the garage.
+        YG.Insides.YGInsides.SetTimerInterAdv();
         // The plugin restores pause/audio after its callback has completed.
         _adQueued = true;
     }

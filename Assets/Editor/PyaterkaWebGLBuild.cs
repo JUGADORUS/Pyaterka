@@ -67,6 +67,7 @@ public static class PyaterkaWebGLBuild
                 string html = File.ReadAllText(indexPath);
                 if (!html.Contains("pyaterka_premium_car") || !html.Contains("PYATERKA_CLOUD_UNAVAILABLE"))
                     throw new BuildFailedException("Generated HTML is missing the Yandex payments/storage integration.");
+                ValidatePluginInitializers(reports);
             }
             var packed = report.packedAssets.SelectMany(a => a.contents)
                 .Where(a => !string.IsNullOrEmpty(a.sourceAssetPath))
@@ -90,6 +91,31 @@ public static class PyaterkaWebGLBuild
             if (Application.isBatchMode) EditorApplication.Exit(1);
             else throw;
         }
+    }
+
+    private static void ValidatePluginInitializers(string reports)
+    {
+        var callbacks = typeof(YG.YG2).GetMethods(System.Reflection.BindingFlags.Static |
+                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic)
+            .Where(method => method.GetCustomAttributes(false).Any(attribute =>
+                attribute.GetType().DeclaringType == typeof(YG.YG2) &&
+                (attribute.GetType().Name.StartsWith("InitYG", StringComparison.Ordinal) ||
+                 attribute.GetType().Name == "StartYGAttribute")))
+            .Select(method => method.Name)
+            // These three exist only in Editor/non-WebGL source branches.
+            .Where(name => name != "InitWindowGame" && name != "ResetStaticLB" && name != "RewardedAdvInit")
+            .OrderBy(name => name).ToArray();
+        string cppDirectory = "Library/Bee/artifacts/WebGL/il2cppOutput/cpp";
+        if (!Directory.Exists(cppDirectory))
+            throw new BuildFailedException("IL2CPP output is unavailable; cannot verify SDK initialization.");
+        string generated = string.Join("\n", Directory.GetFiles(cppDirectory, "Assembly-CSharp*.cpp")
+            .Select(File.ReadAllText));
+        var missing = callbacks.Where(name => !generated.Contains("void YG2_" + name + "_m")).ToArray();
+        File.WriteAllLines(Path.Combine(reports, "sdk-initializers.txt"), callbacks.Select(name =>
+            (missing.Contains(name) ? "MISSING " : "PRESERVED ") + name));
+        if (callbacks.Length == 0 || missing.Length > 0)
+            throw new BuildFailedException("SDK reflection callbacks stripped from player: " + string.Join(", ", missing));
+        Debug.Log("PYATERKA_SDK_INITIALIZERS_PRESERVED: " + callbacks.Length);
     }
 
     private static void ConfigureRelease()

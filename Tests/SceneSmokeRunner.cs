@@ -35,6 +35,7 @@ public class SceneSmokeRunner:MonoBehaviour
         Check(record.text.StartsWith("Best:"),"actual game HUD localized");
         MenuManager.Instance.StartGame();yield return new WaitForSeconds(0.3f);
         Check(MenuManager.GameActive,"actual game can start");MenuManager.Instance.EndRun();
+        YG.Insides.YGInsides.SetTimerInterAdv(0);
         yield return SceneManager.LoadSceneAsync(1);yield return null;
         Check(SceneManager.GetActiveScene().name=="Garage","renamed Garage scene loads");
         Check(Podium.Instance!=null&&BuyButton.Instance!=null,"real garage initializes");
@@ -52,17 +53,26 @@ public class SceneSmokeRunner:MonoBehaviour
         Podium.Instance.RotateCircleToRight();yield return new WaitForSeconds(1.1f);
         Check(Podium.Instance.GetIndex()==2&&cost.text.Contains("99"),"actual Hypercar2 has 99 YAN offer");
         Check(!Progress.Instance.IsCarUnlocked(2),"actual paid car initially locked");
+        // Exercise the real JS-to-C# entry point, rather than only the Editor product simulator.
+        YG2.sendMessage.PaymentsEntries("{\"id\":[],\"ownedProductIds\":[],\"language\":\"en\"}");
+        Check(cost.text=="Unavailable"&&!BuyButton.Instance.GetComponent<UnityEngine.UI.Button>().interactable,
+            "missing SDK catalog disables checkout");
+        YG2.sendMessage.PaymentsEntries("{\"id\":[\"pyaterka_premium_car\"],\"title\":[\"VIP\"],\"description\":[\"Car\"],\"imageURI\":[\"\"],\"price\":[\"99 YAN\"],\"priceValue\":[\"99\"],\"priceCurrencyCode\":[\"YAN\"],\"currencyImageURL\":[\"\"],\"consumed\":[true],\"ownedProductIds\":[],\"language\":\"en\"}");
+        Check(cost.text=="99 YAN"&&BuyButton.Instance.GetComponent<UnityEngine.UI.Button>().interactable,
+            "real payment JSON restores the garage offer after catalog arrives");
+        YG2.sendMessage.PaymentsEntries(YG.InfoYG.NO_DATA);
+        Check(cost.text=="99 YAN"&&PremiumCar.CanBuy,"empty bridge notification does not erase a loaded offer");
         CheckUpgradeVisibility(false);
         Check(!leftIcon.gameObject.activeSelf&&!Field<UnityEngine.UI.Image>(BuyButton.Instance,"rightCurrencyIcon").gameObject.activeSelf,"premium price has no coin icons");
         var bg=BuyButton.Instance.GetComponent<UnityEngine.UI.Image>().color;
         Check(bg.b>bg.g*2f&&bg.r>bg.g*2f,"premium button is purple");
         var note=Field<TMP_Text>(BuyButton.Instance,"paymentNote");
-        Check(note.gameObject.activeSelf&&note.text=="Real money","premium clearly identifies real-money purchase");
+        Check(note.gameObject.activeSelf&&note.text=="Yandex currency","premium identifies the platform currency");
         Check(Mathf.Abs(note.rectTransform.anchoredPosition.y-cost.rectTransform.anchoredPosition.y)>(note.rectTransform.sizeDelta.y+cost.rectTransform.sizeDelta.y)/2f,"price and payment note do not overlap");
         foreach(string lang in new[]{"ru","en","tr","es","pt"})
         {
             YG2.SwitchLanguage(lang);
-            Check(note.text==PyaterkaLocalization.Text("Real money"),"payment note localized "+lang);
+            Check(note.text==PyaterkaLocalization.Text("Yandex currency"),"payment note localized "+lang);
         }
         YG2.SwitchLanguage("en");
         yield return null;
@@ -73,5 +83,23 @@ public class SceneSmokeRunner:MonoBehaviour
         Check(Progress.Instance.IsCarUnlocked(2)&&!BuyButton.Instance.gameObject.activeSelf,"purchase callback unlocks real garage car");
         Check(PlayerPrefs.GetInt("Pyaterka_PremiumCar_Simulation",0)==1,"editor purchase persisted only to simulation");
         PlayerPrefs.DeleteKey("Pyaterka_PremiumCar_Simulation");
+        Check(YG2.isTimerAdvCompleted,"interstitial deadline remains due after time in garage");
+        int openedAds=0;
+        Action opened=()=>openedAds++;
+        YG2.onOpenInterAdv+=opened;
+        YG2.infoYG.Simulation.durationAdv=0.05f;
+        YG2.infoYG.Simulation.loadAdv=0;
+        YG2.infoYG.Simulation.enableInterAdv=true;
+        YG2.infoYG.Simulation.testFailAds=false;
+        yield return SceneManager.LoadSceneAsync(0);yield return null;
+        MenuManager.Instance.RequestStart();
+        yield return new WaitForSecondsRealtime(1f);
+        Check(openedAds==1&&MenuManager.GameActive,"due interstitial opens after garage return and resumes the run");
+        Check(!YG2.isTimerAdvCompleted,"closed interstitial starts a shared cooldown");
+        MenuManager.Instance.EndRun();
+        MenuManager.Instance.RequestStart();
+        yield return new WaitForSecondsRealtime(0.2f);
+        Check(openedAds==1&&MenuManager.GameActive,"next run starts without repeating the ad during cooldown");
+        YG2.onOpenInterAdv-=opened;
     }
 }

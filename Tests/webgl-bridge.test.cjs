@@ -7,10 +7,12 @@ const source = relative => fs.readFileSync(path.join(base, relative), 'utf8');
 let checks = 0;
 function check(ok, name) { assert.ok(ok, name); checks++; console.log('PASS: ' + name); }
 function fixture(code, extra = {}) {
- const calls=[];
- const context={console:{error(){},warn(){}},NO_DATA:'no data',ysdk:null,player:null,initGame:true,
+ const calls=[],logs=[],timers=new Map();let timerId=0;
+ const context={console:{error:(...args)=>logs.push(args.join(' ')),warn:(...args)=>logs.push(args.join(' '))},
+  setTimeout:(callback,delay)=>{timers.set(++timerId,{callback,delay});return timerId;},clearTimeout:id=>timers.delete(id),
+  NO_DATA:'no data',ysdk:null,player:null,initGame:true,
   LogStyledMessage(){},FocusGame(){},YG2Instance:(...args)=>calls.push(args),...extra};
- vm.createContext(context);vm.runInContext(code,context);return{context,calls};
+ vm.createContext(context);vm.runInContext(code,context);return{context,calls,logs,timers};
 }
 async function run() {
  const cloudCode=source('Storage/Scripts/Editor/CopyCode/CloudStorage_js.js');
@@ -48,6 +50,43 @@ async function run() {
  check(consumed.length===0,'permanent car entitlement is not consumed');
  check(JSON.parse(f.calls[0][1]).ownedProductIds.includes('pyaterka_premium_car'),'permanent ownership restored from SDK');
  check(!payCode.includes('miner_titan_pickaxe'),'Miner product removed');
+ const premium={id:'pyaterka_premium_car',title:'VIP',description:'Car',imageURI:'',price:'99 YAN',priceValue:'99',priceCurrencyCode:'YAN'};
+ const sdk = pay => ({getPayments:async()=>pay,environment:{i18n:{lang:'ru'}}});
+ f=fixture(payCode,{ysdk:sdk({getCatalog:async()=>[premium],getPurchases:async()=>[]})});
+ await f.context.InitPayments();
+ check(JSON.parse(f.calls[0][1]).id[0]===premium.id,'catalog works without optional currency icon method');
+ check(f.timers.size===0,'successful initialization does not poll');
+ f=fixture(payCode,{ysdk:sdk({getCatalog:async()=>[{...premium,getPriceCurrencyImage(){throw Error('icon')}}],getPurchases:async()=>[]})});
+ await f.context.InitPayments();
+ check(JSON.parse(f.calls[0][1]).price[0]==='99 YAN','currency icon error preserves purchasable catalog');
+ let failOwnership=true,reads=0;
+ const recovering={getCatalog:async()=>[premium],getPurchases:async()=>{reads++;if(failOwnership)throw Error('temporary offline');return[]}};
+ f=fixture(payCode,{ysdk:sdk(recovering)});
+ await Promise.all([f.context.InitPayments(),f.context.InitPayments()]);
+ check(reads===1,'concurrent initialization shares one SDK request');
+ check(JSON.parse(f.calls[0][1]).id.length===0&&f.logs.some(log=>log.includes('getPurchases failed')),'ownership failure blocks charging and reports exact failing request');
+ check(f.timers.size===1,'temporary failure schedules one retry');
+ failOwnership=false;
+ let timer=[...f.timers.values()][0];f.timers.clear();timer.callback();await f.context.InitPayments();
+ check(JSON.parse(f.calls.at(-1)[1]).id[0]===premium.id,'retry restores the offer after temporary ownership failure');
+ f=fixture(payCode,{ysdk:sdk({getCatalog:async()=>[],getPurchases:async()=>[]})});
+ await f.context.InitPayments();
+ check(f.logs.some(log=>log.includes('VIP product missing')),'empty catalog is diagnosed instead of silently reporting success');
+ for(let i=0;i<3;i++) {const next=[...f.timers.values()][0];f.timers.clear();if(next){next.callback();await f.context.InitPayments();}}
+ check(f.timers.size===0,'retry count is bounded');
+ f=fixture(payCode,{ysdk:sdk({getCatalog:async()=>{throw Error('catalog offline')},getPurchases:async()=>[{productID:premium.id}]})});
+ await f.context.InitPayments();
+ check(JSON.parse(f.calls[0][1]).ownedProductIds.includes(premium.id)&&f.logs.some(log=>log.includes('getCatalog failed')),'catalog outage preserves verified permanent ownership and reports failure');
+ let charges=0;
+ const checkout={getCatalog:async()=>[premium],getPurchases:async()=>[{productID:premium.id}],purchase:async()=>{charges++;return{productID:premium.id}}};
+ f=fixture(payCode,{ysdk:sdk(checkout)});await f.context.InitPayments();await f.context.BuyPayments(premium.id);
+ check(charges===0&&f.calls.at(-1)[0]==='OnPurchaseSuccess','already owned permanent car restores without another charge');
+ checkout.getPurchases=async()=>[];
+ f=fixture(payCode,{ysdk:sdk(checkout)});await f.context.InitPayments();await f.context.BuyPayments(premium.id);
+ check(charges===1&&f.calls.at(-1)[0]==='OnPurchaseSuccess','unowned car opens SDK checkout and unlocks only after success');
+ checkout.getPurchases=async()=>{throw Error('cannot verify ownership')};
+ f=fixture(payCode,{ysdk:sdk(checkout)});await f.context.InitPayments();await f.context.BuyPayments(premium.id);
+ check(charges===1&&f.calls.at(-1)[0]==='OnPurchaseFailed','ownership lookup failure cannot charge an already owned car');
  console.log('Passed '+checks+' YG2 JavaScript checks');
 }
 run().catch(error=>{console.error(error);process.exitCode=1});

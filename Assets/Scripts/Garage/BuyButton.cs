@@ -85,7 +85,7 @@ public class BuyButton : MonoBehaviour
         StyleCurrencyIcon(rightCurrencyIcon, 135f, !premium);
         if (paymentNote == null)
         {
-            var obj = new GameObject("Real money label", typeof(RectTransform), typeof(TextMeshProUGUI));
+            var obj = new GameObject("Yandex currency label", typeof(RectTransform), typeof(TextMeshProUGUI));
             obj.layer = gameObject.layer;
             obj.transform.SetParent(transform, false);
             paymentNote = obj.GetComponent<TMP_Text>();
@@ -102,7 +102,7 @@ public class BuyButton : MonoBehaviour
             paymentNote.rectTransform.sizeDelta = new Vector2(360f, 80f);
         }
         paymentNote.gameObject.SetActive(premium);
-        paymentNote.text = PyaterkaLocalization.Text("Real money");
+        paymentNote.text = PyaterkaLocalization.Text("Yandex currency");
     }
 
     private static void StyleCurrencyIcon(Image icon, float x, bool visible)

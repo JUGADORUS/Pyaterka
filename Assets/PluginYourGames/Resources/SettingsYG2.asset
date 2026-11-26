@@ -189,11 +189,11 @@ MonoBehaviour:
     - id: pyaterka_premium_car
       title: VIP Hypercar
       description: 12 HP, speed 18, +50% earnings, one fatal-hit shield per run
-      imageURI:
+      imageURI: 
       price: 99 YAN
       priceValue: 99
       priceCurrencyCode: YAN
-      currencyImageURL:
+      currencyImageURL: 
       consumed: 1
   RewardedAdv:
     skipInterAdvAfterReward: 0
@@ -219,7 +219,7 @@ MonoBehaviour:
     buildNumber: 1
   Simulation:
     device: 0
-    language: en
+    language: es
     enableInterAdv: 1
     advIntervalSimulation: 60
     durationAdv: 0.5
